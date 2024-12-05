@@ -1,4 +1,8 @@
 messages:
+  database-error: "%prefix% &cThere was a problem communicating with the database."
+  no-permission: "%prefix% &cYou don't have permission to use this command."
+  only-player: "%prefix% &cOnly players can use this command."
+
   setup-mode:
     activated: "%prefix% &aYou have entered the setup mode!"
     deactivated: "%prefix% &cYou have exited the setup mode!"
@@ -21,5 +25,10 @@ messages:
       - " &6- &eMob Type: &f%mob_type%"
       - " &6- &eMax Mobs: &f%max_mobs%"
       - " &6- &eSpawn Rate: &f%spawn_rate%"
+
+    killall-command:
+      usage: "%prefix% &fUsage: &7/mobspawner killall <spawner_name/*>"
+      deleted-mobs: "%prefix% &aAll mobs belonging to %spawner_type% spawner have been deleted from the server and database."
+      deleted-all-mobs: "%prefix% &aAll mobs have been deleted from the server and the database."
 
 version: '1'

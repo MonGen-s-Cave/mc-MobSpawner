@@ -9,7 +9,7 @@ import hu.kxtsoo.mobspawner.manager.SetupModeManager;
 import org.bukkit.entity.Player;
 
 @Command("mobspawner")
-@Permission("mcave.admin")
+@Permission("mobspawner.admin")
 public class SetupCommand extends BaseCommand {
 
     private final SetupGUI setupGUI;
@@ -21,6 +21,7 @@ public class SetupCommand extends BaseCommand {
     }
 
     @SubCommand("setup")
+    @Permission("mobspawner.admin.setup")
     public void openSetupMenu(Player player) {
         if (setupModeManager.isInSetupMode(player)) {
             setupModeManager.toggleSetupMode(player);

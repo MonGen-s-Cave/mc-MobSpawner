@@ -1,6 +1,7 @@
 package hu.kxtsoo.mobspawner.manager;
 
 import dev.triumphteam.cmd.bukkit.BukkitCommandManager;
+import hu.kxtsoo.mobspawner.commands.admin.KillAllCommand;
 import hu.kxtsoo.mobspawner.commands.admin.SetupCommand;
 import hu.kxtsoo.mobspawner.guis.SetupGUI;
 import hu.kxtsoo.mobspawner.util.ConfigUtil;
@@ -26,5 +27,6 @@ public class CommandManager {
 
     public void registerCommands() {
         commandManager.registerCommand(new SetupCommand(setupGUI, setupModeManager));
+        commandManager.registerCommand(new KillAllCommand(configUtil));
     }
 }

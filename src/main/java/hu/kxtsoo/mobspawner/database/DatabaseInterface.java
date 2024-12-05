@@ -29,6 +29,11 @@ public interface DatabaseInterface {
     Location getSpawnerLocationForMob(String mobUuid) throws SQLException;
     Mob.MobLevel getMobLevelByUUID(String mobUuid) throws SQLException;
     List<String> getMobUUIDsForSpawner(Location spawnerLocation) throws SQLException;
+    List<String> getAllMobUUIDs() throws SQLException;
+    List<String> getMobUUIDsBySpawnerType(String spawnerType) throws SQLException;
+    void clearAllMobs() throws SQLException;
+    void clearMobsBySpawnerType(String spawnerType) throws SQLException;
+    void clearMobsBySpawnerLocation(Location location) throws SQLException;
 
     // PlayerData handling
     PlayerData getPlayerData(String playerUuid) throws SQLException;

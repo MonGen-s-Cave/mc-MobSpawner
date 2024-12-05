@@ -335,6 +335,71 @@ public class MySQL implements DatabaseInterface {
         }
     }
 
+    public List<String> getAllMobUUIDs() throws SQLException {
+        String query = "SELECT mob_uuid FROM mobspawner_mobs";
+        List<String> mobUUIDs = new ArrayList<>();
+
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                mobUUIDs.add(rs.getString("mob_uuid"));
+            }
+        }
+
+        return mobUUIDs;
+    }
+
+    public List<String> getMobUUIDsBySpawnerType(String spawnerType) throws SQLException {
+        String query = "SELECT mob_uuid FROM mobspawner_mobs WHERE spawner_name = ?";
+        List<String> mobUUIDs = new ArrayList<>();
+
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, spawnerType);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    mobUUIDs.add(rs.getString("mob_uuid"));
+                }
+            }
+        }
+
+        return mobUUIDs;
+    }
+
+    public void clearAllMobs() throws SQLException {
+        String query = "DELETE FROM mobspawner_mobs";
+
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.executeUpdate();
+        }
+    }
+
+    public void clearMobsBySpawnerType(String spawnerType) throws SQLException {
+        String query = "DELETE FROM mobspawner_mobs WHERE spawner_name = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, spawnerType);
+            ps.executeUpdate();
+        }
+    }
+
+    public void clearMobsBySpawnerLocation(Location location) throws SQLException {
+        String query = "DELETE FROM mobspawner_mobs WHERE spawner_world = ? AND spawner_x = ? AND spawner_y = ? AND spawner_z = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, location.getWorld().getName());
+            ps.setDouble(2, location.getX());
+            ps.setDouble(3, location.getY());
+            ps.setDouble(4, location.getZ());
+            ps.executeUpdate();
+        }
+    }
+
     @Override
     public void close() {
         if (dataSource != null) {

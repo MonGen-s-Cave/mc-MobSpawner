@@ -116,6 +116,31 @@ public class H2 implements DatabaseInterface {
     }
 
     @Override
+    public List<String> getAllMobUUIDs() throws SQLException {
+        return List.of();
+    }
+
+    @Override
+    public List<String> getMobUUIDsBySpawnerType(String spawnerType) throws SQLException {
+        return List.of();
+    }
+
+    @Override
+    public void clearAllMobs() throws SQLException {
+
+    }
+
+    @Override
+    public void clearMobsBySpawnerType(String spawnerType) throws SQLException {
+
+    }
+
+    @Override
+    public void clearMobsBySpawnerLocation(Location location) throws SQLException {
+
+    }
+
+    @Override
     public PlayerData getPlayerData(String playerUuid) throws SQLException {
         return null;
     }

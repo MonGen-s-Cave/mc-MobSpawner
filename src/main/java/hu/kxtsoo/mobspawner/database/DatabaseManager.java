@@ -14,7 +14,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 public class DatabaseManager {
 
@@ -92,6 +91,26 @@ public class DatabaseManager {
 
     public static List<PlayerStat> getTopPlayerStat(String statType, int limit) throws SQLException {
         return database.getTopPlayerStat(statType, limit);
+    }
+
+    public static List<String> getAllMobUUIDs() throws SQLException {
+        return database.getAllMobUUIDs();
+    }
+
+    public static List<String> getMobUUIDsBySpawnerType(String spawnerType) throws SQLException {
+        return database.getMobUUIDsBySpawnerType(spawnerType);
+    }
+
+    public static void clearAllMobs() throws SQLException {
+        database.clearAllMobs();
+    }
+
+    public static void clearMobsBySpawnerType(String spawnerType) throws SQLException {
+        database.clearMobsBySpawnerType(spawnerType);
+    }
+
+    public static void clearMobsBySpawnerLocation(Location location) throws SQLException {
+        database.clearMobsBySpawnerLocation(location);
     }
 
     public static Connection getConnection() throws SQLException {
