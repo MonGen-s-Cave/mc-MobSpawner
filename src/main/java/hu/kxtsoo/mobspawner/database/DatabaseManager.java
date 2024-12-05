@@ -1,5 +1,6 @@
 package hu.kxtsoo.mobspawner.database;
 
+import hu.kxtsoo.mobspawner.database.data.PlayerStat;
 import hu.kxtsoo.mobspawner.database.impl.H2;
 import hu.kxtsoo.mobspawner.database.impl.MySQL;
 import hu.kxtsoo.mobspawner.database.impl.SQLite;
@@ -13,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 public class DatabaseManager {
 
@@ -88,12 +90,8 @@ public class DatabaseManager {
         database.savePlayerData(playerData);
     }
 
-    public static List<PlayerData> getTopPlayersByDamage(int limit) throws SQLException {
-        return database.getTopPlayersByDamage(limit);
-    }
-
-    public static List<PlayerData> getTopPlayersByKills(int limit) throws SQLException {
-        return database.getTopPlayersByKills(limit);
+    public static List<PlayerStat> getTopPlayerStat(String statType, int limit) throws SQLException {
+        return database.getTopPlayerStat(statType, limit);
     }
 
     public static Connection getConnection() throws SQLException {

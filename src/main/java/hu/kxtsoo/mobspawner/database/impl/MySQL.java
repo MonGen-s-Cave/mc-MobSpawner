@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import hu.kxtsoo.mobspawner.MobSpawner;
 import hu.kxtsoo.mobspawner.database.DatabaseInterface;
+import hu.kxtsoo.mobspawner.database.data.PlayerStat;
 import hu.kxtsoo.mobspawner.model.Mob;
 import hu.kxtsoo.mobspawner.model.PlayerData;
 import hu.kxtsoo.mobspawner.model.Spawner;
@@ -15,7 +16,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MySQL implements DatabaseInterface {
 
@@ -306,44 +309,30 @@ public class MySQL implements DatabaseInterface {
         }
     }
 
-    @Override
-    public List<PlayerData> getTopPlayersByDamage(int limit) throws SQLException {
-        String query = "SELECT uuid, mobs_killed, damage_dealt FROM mobspawner_players ORDER BY damage_dealt DESC LIMIT ?";
-        List<PlayerData> topPlayers = new ArrayList<>();
-        try (Connection connection = getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            ps.setInt(1, limit);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    topPlayers.add(new PlayerData(
-                            rs.getString("uuid"),
-                            rs.getInt("mobs_killed"),
-                            rs.getLong("damage_dealt")
-                    ));
-                }
-            }
+    public List<PlayerStat> getTopPlayerStat(String statType, int limit) throws SQLException {
+        String query;
+        switch (statType) {
+            case "damage":
+                query = "SELECT uuid, damage_dealt AS value FROM mobspawner_players ORDER BY damage_dealt DESC LIMIT ?";
+                break;
+            case "kills":
+                query = "SELECT uuid, mobs_killed AS value FROM mobspawner_players ORDER BY mobs_killed DESC LIMIT ?";
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid stat type: " + statType);
         }
-        return topPlayers;
-    }
 
-    @Override
-    public List<PlayerData> getTopPlayersByKills(int limit) throws SQLException {
-        String query = "SELECT uuid, mobs_killed, damage_dealt FROM mobspawner_players ORDER BY mobs_killed DESC LIMIT ?";
-        List<PlayerData> topPlayers = new ArrayList<>();
-        try (Connection connection = getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
-            ps.setInt(1, limit);
-            try (ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<PlayerStat> topPlayers = new ArrayList<>();
                 while (rs.next()) {
-                    topPlayers.add(new PlayerData(
-                            rs.getString("uuid"),
-                            rs.getInt("mobs_killed"),
-                            rs.getLong("damage_dealt")
-                    ));
+                    topPlayers.add(new PlayerStat(rs.getString("uuid"), rs.getDouble("value")));
                 }
+                return topPlayers;
             }
         }
-        return topPlayers;
     }
 
     @Override

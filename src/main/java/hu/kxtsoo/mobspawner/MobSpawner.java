@@ -1,7 +1,6 @@
 package hu.kxtsoo.mobspawner;
 
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
-import hu.kxtsoo.mobspawner.database.data.TopPlayerCache;
 import hu.kxtsoo.mobspawner.hooks.HookManager;
 import hu.kxtsoo.mobspawner.listener.MobHealthListener;
 import hu.kxtsoo.mobspawner.listener.PlayerInteractListener;
@@ -61,9 +60,6 @@ public final class MobSpawner extends JavaPlugin {
         CommandManager commandManager = new CommandManager(this, configUtil, spawnerManager, setupGUI, setupModeManager);
         commandManager.registerSuggestions();
         commandManager.registerCommands();
-
-        TopPlayerCache.refreshCache(this);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> TopPlayerCache.refreshCache(this), 0L, 20L * 60);
 
     }
 

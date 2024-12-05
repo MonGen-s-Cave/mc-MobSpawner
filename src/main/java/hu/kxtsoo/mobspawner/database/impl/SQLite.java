@@ -1,6 +1,7 @@
 package hu.kxtsoo.mobspawner.database.impl;
 
 import hu.kxtsoo.mobspawner.database.DatabaseInterface;
+import hu.kxtsoo.mobspawner.database.data.PlayerStat;
 import hu.kxtsoo.mobspawner.model.Mob;
 import hu.kxtsoo.mobspawner.model.PlayerData;
 import hu.kxtsoo.mobspawner.model.Spawner;
@@ -10,6 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.sql.*;
 import java.util.List;
+import java.util.Map;
 
 public class SQLite implements DatabaseInterface {
 
@@ -115,12 +117,7 @@ public class SQLite implements DatabaseInterface {
     }
 
     @Override
-    public List<PlayerData> getTopPlayersByDamage(int limit) throws SQLException {
-        return List.of();
-    }
-
-    @Override
-    public List<PlayerData> getTopPlayersByKills(int limit) throws SQLException {
+    public List<PlayerStat> getTopPlayerStat(String statType, int limit) throws SQLException {
         return List.of();
     }
 

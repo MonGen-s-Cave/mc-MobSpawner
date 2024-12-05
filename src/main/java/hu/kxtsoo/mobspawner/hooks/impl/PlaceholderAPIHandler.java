@@ -2,8 +2,7 @@ package hu.kxtsoo.mobspawner.hooks.impl;
 
 import hu.kxtsoo.mobspawner.MobSpawner;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
-import hu.kxtsoo.mobspawner.database.data.TopPlayerCache;
-import hu.kxtsoo.mobspawner.model.PlayerData;
+import hu.kxtsoo.mobspawner.database.data.PlayerStat;
 import hu.kxtsoo.mobspawner.util.ConfigUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.Bukkit;
@@ -13,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,10 +56,6 @@ public class PlaceholderAPIHandler extends PlaceholderExpansion {
 
     @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
-        if (player == null) {
-            return "";
-        }
-
         Pattern pattern = Pattern.compile("top_(damage|kills)_(\\d+)_(name|value)");
         Matcher matcher = pattern.matcher(params);
 
@@ -68,7 +64,7 @@ public class PlaceholderAPIHandler extends PlaceholderExpansion {
             int rank = Integer.parseInt(matcher.group(2));
             boolean isName = matcher.group(3).equals("name");
 
-            return getTopPlayerStatFromCache(statType, rank, isName);
+            return getTopPlayerStat(statType, rank, isName);
         }
 
         String playerUuid = player.getUniqueId().toString();
@@ -91,23 +87,23 @@ public class PlaceholderAPIHandler extends PlaceholderExpansion {
         };
     }
 
-    private @Nullable String getTopPlayerStatFromCache(String statType, int rank, boolean isName) {
-        List<PlayerData> topPlayers = TopPlayerCache.getTopPlayers(statType);
+    private @NotNull String getTopPlayerStat(String sortBy, int rank, boolean isName) {
+        try {
+            List<PlayerStat> topPlayers = DatabaseManager.getTopPlayerStat(sortBy, rank);
 
-        if (rank > 0 && rank <= topPlayers.size()) {
-            PlayerData data = topPlayers.get(rank - 1);
-            if (isName) {
-                String playerName = Bukkit.getOfflinePlayer(UUID.fromString(data.getUuid())).getName();
-                System.out.println(playerName + Bukkit.getOfflinePlayer(UUID.fromString(data.getUuid())));
-                return playerName != null && !playerName.isEmpty()
-                        ? playerName
-                        : configUtil.getHooks().getString("hooks.settings.PlaceholderAPI.empty-placeholder", "---");
-            } else {
-                return "damage".equals(statType)
-                        ? String.valueOf(data.getDamageDealt())
-                        : String.valueOf(data.getMobsKilled());
+            if (rank > 0 && rank <= topPlayers.size()) {
+                PlayerStat playerStat = topPlayers.get(rank - 1);
+                if (isName) {
+                    String playerName = Bukkit.getOfflinePlayer(UUID.fromString(playerStat.getUuid())).getName();
+                    return playerName != null && !playerName.isEmpty() ? playerName : "---";
+                } else {
+                    return String.valueOf((int) Math.round(playerStat.getValue()));
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+
         return configUtil.getHooks().getString("hooks.settings.PlaceholderAPI.empty-placeholder", "---");
     }
 }
