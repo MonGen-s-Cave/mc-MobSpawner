@@ -1,0 +1,9 @@
+hooks:
+  settings:
+    PlaceholderAPI:
+      empty-placeholder: '---'
+
+  register:
+    PlaceholderAPI: true
+
+version: 1

@@ -1,0 +1,24 @@
+setup-menu:
+  title: "&8      ꜱᴇʟᴇᴄᴛ ᴀ ꜱᴘᴀᴡɴᴇʀ"
+  size: 27
+
+  filler-item:
+    type: "GRAY_STAINED_GLASS_PANE"
+    name: ""
+
+  spawner-item:
+    type: SPAWNER
+    slot: 5
+    name: "&6&l> %spawner_name%"
+    lore:
+      - "&8- ꜱᴘᴀᴡɴᴇʀ"
+      - "&f"
+      - " &eℹ &fType: &7%type%"
+      - "&f"
+      - " &8• &fMob Type: &7%mob_type%"
+      - " &8• &fMax Mobs: &7%max_mobs%"
+      - " &8• &fSpawn Rate: &7%spawn_rate%"
+      - "&f"
+      - "&6- ʟᴇꜰᴛ ᴄʟɪᴄᴋ ᴛᴏ ꜱᴇʟᴇᴄᴛ"
+
+version: '1'

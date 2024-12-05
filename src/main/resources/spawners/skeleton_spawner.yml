@@ -1,0 +1,26 @@
+spawner:
+  # Visible: A specified block represents the visibility of the spawner
+  # Invisible: The spawner is invisible, has no block, and is only visible in setup mode
+  type: "VISIBLE"
+  # The mob spawns at the specified interval (in seconds)
+  spawn-rate: 30
+  conditions:
+    # Allow a maximum of 5 mobs to spawn near the spawner
+    radius: 10
+    max-mobs: 5
+
+    # Allow a maximum of 10 mobs to spawn from this spawner
+    # (if there are fewer than 5 near the spawner)
+    total-max-mobs: 10
+
+    # Only allow mobs to spawn from the spawner if the chunk is loaded
+    require-chunk-loaded: true
+
+    # Check if there is a player near the spawner and only allow mobs
+    # to spawn if a player is nearby
+    player-radius-check:
+      enabled: true
+      radius: 20
+
+mob:
+  type: "skeleton"

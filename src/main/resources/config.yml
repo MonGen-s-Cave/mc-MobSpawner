@@ -1,0 +1,63 @@
+prefix: '[MCave]'
+
+storage:
+  #  driver: sqlite, mysql or h2
+  driver: "h2"
+
+  host: "localhost"
+  port: 3306
+  name: "database_name"
+  username: "database_username"
+  password: "database_password"
+
+  settings:
+    useSSL: true
+
+  pool:
+    maximumPoolSize: 10
+    minimumIdle: 5
+    connectionTimeout: 30000
+    maxLifetime: 1800000
+    idleTimeout: 600000
+
+hooks:
+  packet-events:
+    enabled:
+
+setup-mode:
+  settings:
+    restore-inventory: true
+    night-vision: true
+    flight: true
+    gamemode: CREATIVE
+    spawner-visibility:
+      mode: PARTICLE # or MATERIAL
+      type: FLAME # or STONE
+  items:
+    view-all:
+      slot: 1
+      type: "ENDER_EYE"
+      name: "&eView All Spawners"
+      lore:
+        - "&7Toggle viewing all spawners."
+    select-spawner:
+      slot: 2
+      type: "BOOK"
+      name: "&aSelect Spawner"
+      lore:
+        - "&7Click to select a spawner."
+    place-spawner:
+      slot: 3
+      type: "GRASS_BLOCK"
+      name: "&bPlace Spawner"
+      lore:
+        - "&7Place a spawner at the selected location."
+    remove-spawner:
+      slot: 4
+      type: "BARRIER"
+      name: "&cRemove Spawner"
+      lore:
+        - "&7Remove a spawner from the world."
+
+
+version: '1'

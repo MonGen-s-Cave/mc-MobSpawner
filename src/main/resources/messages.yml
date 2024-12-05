@@ -1,0 +1,25 @@
+messages:
+  setup-mode:
+    activated: "%prefix% &aYou have entered the setup mode!"
+    deactivated: "%prefix% &cYou have exited the setup mode!"
+    items-actionbar:
+      visibility-activated: "%prefix% &aSpawner Visibility activated"
+      visibility-deactivated: "%prefix% &cSpawner Visibility deactivated"
+      spawner-placed: "%prefix% &aSuccessfully placed %spawner% spawner"
+      spawner-not-selected: "%prefix% &cNo spawner selected"
+      spawner-removed: "%prefix% &aSpawner successfully removed"
+      not-selected-block: "%prefix% &cPlace the spawner on a block"
+      claimed-block: "%prefix% &cThere is already a spawner here"
+      no-spawner-there: "%prefix% &cThere is no spawner placed"
+    spawn-info:
+      - "%prefix% &fSpawner Information"
+      - "&f"
+      - " &6- &eType: &f%type%"
+      - " &6- &eSpawner Name: &f%name%"
+      - " &6- &eLocation: &f%location%"
+      - "&f"
+      - " &6- &eMob Type: &f%mob_type%"
+      - " &6- &eMax Mobs: &f%max_mobs%"
+      - " &6- &eSpawn Rate: &f%spawn_rate%"
+
+version: '1'
