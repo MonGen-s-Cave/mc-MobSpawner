@@ -21,7 +21,8 @@ public class HookManager {
         if (configUtil.getHooks().getBoolean("hooks.register.PlaceholderAPI", true) &&
                 Bukkit.getPluginManager().getPlugin("PlaceholderAPI").isEnabled()) {
 
-            placeholderAPIHandler = new PlaceholderAPIHandler(plugin);
+            long cacheUpdateIntervalMillis = configUtil.getHooks().getLong("hooks.settings.PlaceholderAPI.update-interval-seconds", 300L) * 1000;
+            placeholderAPIHandler = new PlaceholderAPIHandler(plugin, cacheUpdateIntervalMillis);
             placeholderAPIHandler.register();
 
             plugin.getLogger().info("\u001B[32m[Hook] PlaceholderAPI successfully enabled.\u001B[0m");

@@ -1,17 +1,15 @@
-prefix: '[MCave]'
+prefix: '&#CE6012[MobSpawner]'
 
 storage:
-  #  driver: sqlite, mysql or h2
-  driver: "h2"
+  # Drivers: SQLite, MySQL, H2
+  # Recommended: SQLite
+  driver: "sqlite"
 
   host: "localhost"
   port: 3306
   name: "database_name"
   username: "database_username"
   password: "database_password"
-
-  settings:
-    useSSL: true
 
   pool:
     maximumPoolSize: 10
@@ -20,44 +18,87 @@ storage:
     maxLifetime: 1800000
     idleTimeout: 600000
 
-hooks:
-  packet-events:
-    enabled:
+locale: en
 
 setup-mode:
   settings:
     restore-inventory: true
     night-vision: true
-    flight: true
+    flight: false
     gamemode: CREATIVE
     spawner-visibility:
       mode: PARTICLE # or MATERIAL
-      type: FLAME # or STONE
+      type: WAX_ON # or STONE
   items:
     view-all:
-      slot: 1
+      slot: 0
       type: "ENDER_EYE"
-      name: "&eView All Spawners"
+      name: "&#E4FB08View All Spawners &7[Right-Click]"
       lore:
-        - "&7Toggle viewing all spawners."
-    select-spawner:
-      slot: 2
-      type: "BOOK"
-      name: "&aSelect Spawner"
-      lore:
-        - "&7Click to select a spawner."
+        - "&8- ꜱᴘᴀᴡɴᴇʀ ꜱᴇᴛᴛɪɴɢ"
+        - "&f"
+        - "&fRight click and display"
+        - "&fthe active spawners."
+        - "&f"
+        - "&eʀɪɢʜᴛ-ᴄʟɪᴄᴋ: ᴜꜱᴇ"
     place-spawner:
-      slot: 3
-      type: "GRASS_BLOCK"
-      name: "&bPlace Spawner"
+      slot: 2
+      type: "BEACON"
+      name: "&#08FBC0Add Spawner &7[Place]"
       lore:
-        - "&7Place a spawner at the selected location."
+        - "&8- ꜱᴘᴀᴡɴᴇʀ ꜱᴇᴛᴛɪɴɢ"
+        - "&f"
+        - "&fRight click on a block and"
+        - "&fplace the selected spawners."
+        - "&f"
+        - "&eʀɪɢʜᴛ-ᴄʟɪᴄᴋ: ᴘʟᴀᴄᴇ"
     remove-spawner:
-      slot: 4
-      type: "BARRIER"
-      name: "&cRemove Spawner"
+      slot: 3
+      type: "BLAZE_ROD"
+      name: "&#FB5708Remove Spawner &7[Left-Click]"
       lore:
-        - "&7Remove a spawner from the world."
+        - "&8- ꜱᴘᴀᴡɴᴇʀ ꜱᴇᴛᴛɪɴɢ"
+        - "&f"
+        - "&fLeft click on a block where"
+        - "&fspawner is placed and delete it."
+        - "&f"
+        - "&eʟᴇꜰᴛ-ᴄʟɪᴄᴋ: ᴅᴇʟᴇᴛᴇ"
+    spawner-info:
+      slot: 5
+      type: "HONEYCOMB"
+      name: "&#FFA923Spawner Info &7[Right-Click]"
+      lore:
+        - "&8- ꜱᴘᴀᴡɴᴇʀ ꜱᴇᴛᴛɪɴɢ"
+        - "&f"
+        - "&fRight click on a block where you have"
+        - "&fyou have placed spawner to retrieve"
+        - "&fthe informations."
+        - "&f"
+        - "&eʀɪɢʜᴛ-ᴄʟɪᴄᴋ: ᴜꜱᴇ"
+    select-spawner:
+      slot: 7
+      type: "BOOK"
+      name: "&#2382FFSelect Spawner &7[Right Click]"
+      lore:
+        - "&8- ꜱᴘᴀᴡɴᴇʀ ꜱᴇᴛᴛɪɴɢ"
+        - "&f"
+        - "&fRight-click on the item and choose"
+        - "&fa spawners of your choice."
+        - "&f"
+        - "&eʀɪɢʜᴛ-ᴄʟɪᴄᴋ: ᴜꜱᴇ"
+    leave-setup-mode:
+      slot: 8
+      type: "TNT_MINECART"
+      name: "&#C10000Leave Setup Mode &7[Right-Click]"
+      lore:
+        - "&8- ꜱᴘᴀᴡɴᴇʀ ꜱᴇᴛᴛɪɴɢ"
+        - "&f"
+        - "&fRight click on the item to"
+        - "&fexit the setup mode!"
+        - "&f"
+        - "&eʀɪɢʜᴛ-ᴄʟɪᴄᴋ: ᴜꜱᴇ"
 
+update-checker:
+  enable: true
 
 version: '1'

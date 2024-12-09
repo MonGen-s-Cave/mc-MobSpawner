@@ -23,4 +23,4 @@ spawner:
       radius: 2
 
 mob:
-  type: "skeleton"
+  type: "zombie"

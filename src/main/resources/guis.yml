@@ -1,5 +1,5 @@
 setup-menu:
-  title: "&8      ꜱᴇʟᴇᴄᴛ ᴀ ꜱᴘᴀᴡɴᴇʀ"
+  title: "&8         ꜱᴇʟᴇᴄᴛ ᴀ ꜱᴘᴀᴡɴᴇʀ"
   size: 27
 
   filler-item:
@@ -7,8 +7,7 @@ setup-menu:
     name: ""
 
   spawner-item:
-    type: SPAWNER
-    slot: 5
+    type: BEACON
     name: "&6&l> %spawner_name%"
     lore:
       - "&8- ꜱᴘᴀᴡɴᴇʀ"

@@ -2,6 +2,8 @@ hooks:
   settings:
     PlaceholderAPI:
       empty-placeholder: '---'
+      # Toplist update interval
+      update-interval-seconds: 300
 
   register:
     PlaceholderAPI: true

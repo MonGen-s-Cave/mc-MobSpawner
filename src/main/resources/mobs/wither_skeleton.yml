@@ -1,0 +1,83 @@
+mob:
+  levels:
+    1:
+      health: 30
+      damage: 5
+      armor: 2
+      spawn-chance: 50
+      display-name: "&#FBD708[ʟᴠʟ ɪ.] &#D7D7D7Wither Skeleton &c[%current_health% ❤]"
+      equipment:
+        helmet:
+          type: "IRON_HELMET"
+          enchantments:
+            protection: 1
+          drop-chance: 0.05
+        weapon:
+          type: "STONE_SWORD"
+          enchantments:
+            sharpness: 1
+          drop-chance: 0.03
+      effects:
+        - effect: "SPEED"
+          level: 1
+          duration: 99999
+      rewards:
+        - "[command] 25% eco give %player% 50"
+        - "[actionbar] &aYou have defeated a &#FBD708[ʟᴠʟ ɪ.] &#D7D7D7Wither Skeleton"
+
+    2:
+      health: 50
+      damage: 10
+      armor: 5
+      spawn-chance: 30
+      display-name: "&#FBD708[ʟᴠʟ ɪɪ.] &#D7D7D7Wither Skeleton &c[%current_health% ❤]"
+      equipment:
+        helmet:
+          type: "DIAMOND_HELMET"
+          enchantments:
+            protection: 3
+          drop-chance: 0.1
+        weapon:
+          type: "IRON_SWORD"
+          enchantments:
+            sharpness: 2
+          drop-chance: 0.05
+      effects:
+        - effect: "SPEED"
+          level: 1
+          duration: 99999
+        - effect: "STRENGTH"
+          level: 2
+          duration: 99999
+      rewards:
+        - "[command] 50% eco give %player% 100"
+        - "[command] give %player% diamond 1"
+        - "[actionbar] &aYou have defeated a &#FBD708[ʟᴠʟ ɪɪ.] &#D7D7D7Wither Skeleton"
+
+    3:
+      health: 80
+      damage: 20
+      armor: 10
+      spawn-chance: 20
+      display-name: "&#FBD708[ʟᴠʟ ɪɪɪ.] &#D7D7D7Wither Skeleton &c[%current_health% ❤]"
+      equipment:
+        helmet:
+          type: "NETHERITE_HELMET"
+          enchantments:
+            protection: 4
+          drop-chance: 0.15
+        weapon:
+          type: "DIAMOND_SWORD"
+          enchantments:
+            sharpness: 3
+          drop-chance: 0.1
+      effects:
+        - effect: "SPEED"
+          level: 2
+          duration: 99999
+        - effect: "STRENGTH"
+          level: 3
+          duration: 99999
+      rewards:
+        - "[command] 100% eco give %player% 500"
+        - "[actionbar] &aYou have defeated a &#FBD708[ʟᴠʟ ɪɪɪ.] &#D7D7D7Wither Skeleton"

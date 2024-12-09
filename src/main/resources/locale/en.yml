@@ -26,9 +26,14 @@ messages:
       - " &6- &eMax Mobs: &f%max_mobs%"
       - " &6- &eSpawn Rate: &f%spawn_rate%"
 
-    killall-command:
-      usage: "%prefix% &fUsage: &7/mobspawner killall <spawner_name/*>"
-      deleted-mobs: "%prefix% &aAll mobs belonging to %spawner_type% spawner have been deleted from the server and database."
-      deleted-all-mobs: "%prefix% &aAll mobs have been deleted from the server and the database."
+  killall-command:
+    usage: "%prefix% &fUsage: &7/mobspawner killall <spawner_name/*>"
+    deleted-mobs: "%prefix% &aAll mobs belonging to %spawner_type% spawner have been deleted from the server and database."
+    deleted-all-mobs: "%prefix% &aAll mobs have been deleted from the server and the database."
+  reload-command:
+    usage: "%prefix% &fUsage: &7/mobspawner reload"
+    success: "%prefix% &aThe plugin files has benn successfully reloaded."
+
+update-notify: "%prefix% &aA new version of the plugin is available! &8(&c%current_version% &f→ &e%latest_version%&8)"
 
 version: '1'

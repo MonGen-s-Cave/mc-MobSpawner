@@ -82,10 +82,8 @@ public class SpawnerManager {
                         return;
                     }
 
-                    Chunk chunk = location.getChunk();
-                    if (!chunk.isLoaded()) {
-                        return;
-                    }
+                    boolean chunkLoaded = location.isChunkLoaded();
+                    if (!chunkLoaded) return;
                 }
 
                 boolean playerCheckEnabled = spawnerConfig.getBoolean("spawner.conditions.player-radius-check.enabled", false);
@@ -148,39 +146,45 @@ public class SpawnerManager {
     private void spawnMob(Spawner spawner) {
         Location location = spawner.getLocation();
 
-        try {
-            int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), location);
-            if (totalMobs >= spawner.getTotalMaxMobs()) {
-                return;
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
-            return;
-        }
-
-        try {
-            Mob mob = getMobFromConfig(spawner.getMobType());
-            if (mob == null) {
-                return;
-            }
-
-            Mob.MobLevel mobLevel = mob.getRandomLevel();
-            if (mobLevel == null) {
-                return;
-            }
-
-            LivingEntity entity = (LivingEntity) location.getWorld().spawnEntity(location, EntityType.valueOf(spawner.getMobType().toUpperCase()));
-            configureMobAttributes(entity, mobLevel);
-
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                DatabaseManager.saveMob(entity.getUniqueId().toString(), spawner.getName(), location, mob.getType(), mobLevel.getLevel());
-            } catch (SQLException e) {
-                plugin.getLogger().severe("Error saving mob to database: " + e.getMessage());
-            }
+                int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), location);
+                if (totalMobs >= spawner.getTotalMaxMobs()) {
+                    return;
+                }
 
-        } catch (Exception e) {
-            plugin.getLogger().severe("Error during mob spawning: " + e.getMessage());
-        }
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    try {
+                        Mob mob = getMobFromConfig(spawner.getMobType());
+                        if (mob == null) {
+                            return;
+                        }
+
+                        Mob.MobLevel mobLevel = mob.getRandomLevel();
+                        if (mobLevel == null) {
+                            return;
+                        }
+
+                        LivingEntity entity = (LivingEntity) location.getWorld().spawnEntity(location, EntityType.valueOf(spawner.getMobType().toUpperCase()));
+                        configureMobAttributes(entity, mobLevel);
+
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                            try {
+                                DatabaseManager.saveMob(entity.getUniqueId().toString(), spawner.getName(), location, mob.getType(), mobLevel.getLevel());
+                            } catch (SQLException e) {
+                                plugin.getLogger().severe("Error saving mob to database: " + e.getMessage());
+                            }
+                        });
+
+                    } catch (Exception e) {
+                        plugin.getLogger().severe("Error during mob spawning: " + e.getMessage());
+                    }
+                });
+
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
+            }
+        });
     }
 
     private Mob getMobFromConfig(String mobType) {

@@ -1,6 +1,5 @@
 package hu.kxtsoo.mobspawner.listener;
 
-import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
 import hu.kxtsoo.mobspawner.manager.MobManager;
 import hu.kxtsoo.mobspawner.model.Mob;
@@ -16,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 public class MobDeathListener implements Listener {
@@ -95,20 +93,6 @@ public class MobDeathListener implements Listener {
                         plugin.getLogger().warning("Unknown reward type: " + actionType);
                 }
             }
-        }
-    }
-
-    @EventHandler
-    public void onEntityRemove(EntityRemoveFromWorldEvent event) {
-        if (event.getEntity() instanceof LivingEntity) {
-            LivingEntity entity = (LivingEntity) event.getEntity();
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                try {
-                    DatabaseManager.removeMob(entity.getUniqueId().toString());
-                } catch (SQLException e) {
-                    plugin.getLogger().severe("Error removing mob from database: " + e.getMessage());
-                }
-            });
         }
     }
 }

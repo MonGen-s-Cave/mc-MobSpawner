@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-import static org.bukkit.Bukkit.getLogger;
-
 public class ConfigUtil {
 
     private final JavaPlugin plugin;
@@ -60,26 +58,41 @@ public class ConfigUtil {
     }
 
     public void setupMessages() {
+        generateDefaultLocales();
 
-        File messagesFile = new File(plugin.getDataFolder(), "messages.yml");
+        String locale = config.getString("locale", "en");
+        File messagesFile = new File(plugin.getDataFolder() + File.separator + "locale", locale + ".yml");
 
         if (!messagesFile.exists()) {
-            plugin.saveResource("messages.yml", false);
+            plugin.saveResource("locale" + File.separator + locale + ".yml", false);
         }
 
         try {
             messages = YamlDocument.create(messagesFile,
-                    Objects.requireNonNull(plugin.getResource("messages.yml")),
+                    Objects.requireNonNull(plugin.getResource("locale/" + locale + ".yml")),
                     GeneralSettings.builder().setUseDefaults(false).build(),
                     LoaderSettings.DEFAULT, DumperSettings.DEFAULT,
-                    UpdaterSettings.builder().setKeepAll(true)
-                            .setVersioning(new BasicVersioning("version")).build());
+                    UpdaterSettings.builder()
+                            .setVersioning(new BasicVersioning("version"))
+                            .setKeepAll(true)
+                            .build());
 
             messages.update();
         } catch (IOException ex) {
-            getLogger().severe("Error loading or creating message files " + ex.getMessage());
+            plugin.getLogger().severe("Error loading or creating message files " + ex.getMessage());
         }
     }
+
+    private void generateDefaultLocales() {
+        String[] locales = {"en", "hu"};
+        for (String locale : locales) {
+            File localeFile = new File(plugin.getDataFolder(), "locale" + File.separator + locale + ".yml");
+            if (!localeFile.exists()) {
+                plugin.saveResource("locale" + File.separator + locale + ".yml", false);
+            }
+        }
+    }
+
 
     public String getMessage(String key) {
         Object messageObj = messages.get(key, "Message not found");
@@ -104,7 +117,24 @@ public class ConfigUtil {
         return "Invalid message format";
     }
 
+    private void generateDefaultConfigs(String folderName, String[] fileNames) {
+        File targetFolder = new File(plugin.getDataFolder(), folderName);
+        if (!targetFolder.exists()) {
+            targetFolder.mkdirs();
+        }
+
+        for (String fileName : fileNames) {
+            File targetFile = new File(targetFolder, fileName + ".yml");
+            if (!targetFile.exists()) {
+                plugin.saveResource(folderName + File.separator + fileName + ".yml", false);
+            }
+        }
+    }
+
     private void loadSpawnerConfigs() {
+        String[] spawnerFiles = {"skeleton_spawner", "zombie_spawner", "wither_skeleton_spawner"};
+        generateDefaultConfigs("spawners", spawnerFiles);
+
         File spawnerFolder = new File(plugin.getDataFolder(), "spawners");
         if (!spawnerFolder.exists()) {
             spawnerFolder.mkdirs();
@@ -126,6 +156,9 @@ public class ConfigUtil {
     }
 
     private void loadMobConfigs() {
+        String[] mobFiles = {"skeleton", "zombie", "wither_skeleton"};
+        generateDefaultConfigs("mobs", mobFiles);
+
         File mobFolder = new File(plugin.getDataFolder(), "mobs");
         if (!mobFolder.exists()) {
             mobFolder.mkdirs();

@@ -4,6 +4,7 @@ import dev.triumphteam.cmd.bukkit.annotation.Permission;
 import dev.triumphteam.cmd.core.BaseCommand;
 import dev.triumphteam.cmd.core.annotation.Command;
 import dev.triumphteam.cmd.core.annotation.SubCommand;
+import dev.triumphteam.cmd.core.annotation.Suggestion;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
 import hu.kxtsoo.mobspawner.util.ConfigUtil;
 import org.bukkit.Bukkit;
@@ -26,7 +27,7 @@ public class KillAllCommand extends BaseCommand {
 
     @SubCommand("killall")
     @Permission("mobspawner.admin.killall")
-    public void killAllMobs(CommandSender sender, String spawnerType) {
+    public void killAllMobs(CommandSender sender, @Suggestion("killall_types") String spawnerType) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(configUtil.getMessage("messages.only-player"));
             return;
@@ -72,7 +73,7 @@ public class KillAllCommand extends BaseCommand {
             }
 
             DatabaseManager.clearMobsBySpawnerType(spawnerType);
-            player.sendMessage(configUtil.getMessage("messages.killall-command.deleted-mobs"));
+            player.sendMessage(configUtil.getMessage("messages.killall-command.deleted-mobs").replace("%spawner_type%", spawnerType));
         } catch (SQLException e) {
             e.printStackTrace();
             player.sendMessage(configUtil.getMessage("messages.database-error"));
