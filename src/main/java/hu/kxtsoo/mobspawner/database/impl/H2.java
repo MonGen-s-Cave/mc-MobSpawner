@@ -43,7 +43,6 @@ public class H2 implements DatabaseInterface {
         }
     }
 
-
     @Override
     public Connection getConnection() {
         return connection;
@@ -230,8 +229,7 @@ public class H2 implements DatabaseInterface {
     public void savePlayerData(PlayerData playerData) throws SQLException {
         String query = "MERGE INTO mobspawner_players (uuid, mobs_killed, damage_dealt) " +
                 "KEY (uuid) VALUES (?, ?, ?)";
-        try (Connection connection = getConnection();
-             PreparedStatement ps = connection.prepareStatement(query)) {
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setString(1, playerData.getUuid());
             ps.setInt(2, playerData.getMobsKilled());
             ps.setLong(3, playerData.getDamageDealt());
@@ -253,8 +251,7 @@ public class H2 implements DatabaseInterface {
                 throw new IllegalArgumentException("Invalid stat type: " + statType);
         }
 
-        try (Connection connection = getConnection();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, limit);
             try (ResultSet rs = stmt.executeQuery()) {
                 List<PlayerStat> topPlayers = new ArrayList<>();
@@ -322,7 +319,7 @@ public class H2 implements DatabaseInterface {
             ps.setString(1, spawnerType);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    mobUUIDs.add(rs.getString("mob_uuid"));
+                    mobUUIDs.add (rs.getString("mob_uuid"));
                 }
             }
         }
