@@ -1,7 +1,7 @@
 name: mc-MobSpawner
 version: '${project.version}'
 main: hu.kxtsoo.mobspawner.MobSpawner
-author: 'kxtsoo'
+author: 'kxtsoo, Zsomi5'
 api-version: '1.20'
 
 softdepend: [PlaceholderAPI]

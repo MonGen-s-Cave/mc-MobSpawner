@@ -70,7 +70,7 @@ public final class MobSpawner extends JavaPlugin {
             new UpdateChecker(this, configUtil, 6940);
        }
 
-        long cacheUpdateIntervalMillis = getConfig().getLong("hooks.settings.PlaceholderAPI.update-interval-seconds", 300) * 1000;
+        long cacheUpdateIntervalMillis = configUtil.getHooks().getLong("hooks.settings.PlaceholderAPI.update-interval-seconds", 300L) * 1000;
         new PlaceholderAPIHandler(this, cacheUpdateIntervalMillis).register();
 
         String orange = "\u001B[38;2;206;96;18m";

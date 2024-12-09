@@ -305,6 +305,7 @@ public class ConfigUtil {
         try {
             config.reload();
             messages.reload();
+            hooks.reload();
             for (YamlDocument doc : spawnerConfigs.values()) {
                 doc.reload();
             }
@@ -312,6 +313,8 @@ public class ConfigUtil {
                 doc.reload();
             }
             guis.reload();
+            loadSpawnerConfigs();
+            loadMobConfigs();
         } catch (IOException ex) {
             plugin.getLogger().log(Level.SEVERE, "Error reloading configuration files", ex);
         }

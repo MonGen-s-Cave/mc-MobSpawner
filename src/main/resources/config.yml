@@ -2,8 +2,8 @@ prefix: '&#CE6012[MobSpawner]'
 
 storage:
   # Drivers: SQLite, MySQL, H2
-  # Recommended: SQLite
-  driver: "sqlite"
+  # Recommended: H2
+  driver: "h2"
 
   host: "localhost"
   port: 3306
