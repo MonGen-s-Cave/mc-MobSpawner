@@ -32,31 +32,63 @@ public class MobDeathListener implements Listener {
     public void onMobDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
 
-        Mob.MobLevel mobLevel;
-        try {
-            mobLevel = DatabaseManager.getMobLevelByUUID(entity.getUniqueId().toString());
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Error fetching mob level from database: " + e.getMessage());
-            return;
-        }
-
-        if (mobLevel == null) return;
-
-        Player killer = entity.getKiller();
-        executeRewardCommands(mobLevel.getRewards(), killer, mobLevel.getName());
-
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                DatabaseManager.removeMob(entity.getUniqueId().toString());
+                Mob.MobLevel mobLevel = DatabaseManager.getMobLevelByUUID(entity.getUniqueId().toString());
+                if (mobLevel == null) return;
 
-                PlayerData playerData = DatabaseManager.getPlayerData(killer.getUniqueId().toString());
-                playerData.setMobsKilled(playerData.getMobsKilled() + 1);
-                DatabaseManager.savePlayerData(playerData);
+                Player killer = entity.getKiller();
+                if (killer == null) return;
+
+                Bukkit.getScheduler().runTask(plugin, () -> executeRewardCommands(mobLevel.getRewards(), killer, mobLevel.getName()));
+
+                try {
+                    DatabaseManager.removeMob(entity.getUniqueId().toString());
+
+                    PlayerData playerData = DatabaseManager.getPlayerData(killer.getUniqueId().toString());
+                    playerData.setMobsKilled(playerData.getMobsKilled() + 1);
+                    DatabaseManager.savePlayerData(playerData);
+                } catch (SQLException e) {
+                    plugin.getLogger().severe("Error updating database for mob death: " + e.getMessage());
+                }
+
             } catch (SQLException e) {
-                plugin.getLogger().severe("Error removing mob from database: " + e.getMessage());
+                plugin.getLogger().severe("Error fetching mob level from database: " + e.getMessage());
             }
         });
     }
+
+//    @EventHandler
+//    public void onMobDeath(EntityDeathEvent event) {
+//        LivingEntity entity = event.getEntity();
+//
+//        Mob.MobLevel mobLevel;
+//        try {
+//            mobLevel = DatabaseManager.getMobLevelByUUID(entity.getUniqueId().toString());
+//        } catch (SQLException e) {
+//            plugin.getLogger().severe("Error fetching mob level from database: " + e.getMessage());
+//            return;
+//        }
+//
+//        if (mobLevel == null) return;
+//
+//        Player killer = entity.getKiller();
+//        if (killer == null) return;
+//
+//        executeRewardCommands(mobLevel.getRewards(), killer, mobLevel.getName());
+//
+//        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+//            try {
+//                DatabaseManager.removeMob(entity.getUniqueId().toString());
+//
+//                PlayerData playerData = DatabaseManager.getPlayerData(killer.getUniqueId().toString());
+//                playerData.setMobsKilled(playerData.getMobsKilled() + 1);
+//                DatabaseManager.savePlayerData(playerData);
+//            } catch (SQLException e) {
+//                plugin.getLogger().severe("Error removing mob from database: " + e.getMessage());
+//            }
+//        });
+//    }
 
     private void executeRewardCommands(List<String> rewards, Player player, String mobName) {
         if (player == null) return;

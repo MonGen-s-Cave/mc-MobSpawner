@@ -1,11 +1,13 @@
 package hu.kxtsoo.mobspawner.listener;
 
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import hu.kxtsoo.mobspawner.MobSpawner;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
 import hu.kxtsoo.mobspawner.model.Mob;
 import hu.kxtsoo.mobspawner.model.PlayerData;
 import hu.kxtsoo.mobspawner.util.ChatUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Vibration;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -17,6 +19,7 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.UUID;
 
 public class MobHealthListener implements Listener {
 
@@ -68,6 +71,22 @@ public class MobHealthListener implements Listener {
                 Bukkit.getScheduler().runTask(plugin, () -> updateDisplayName(entity, mobLevel));
             } catch (SQLException e) {
                 plugin.getLogger().severe("[mc-MobSpawner] Failed to fetch mob level for UUID: " + entity.getUniqueId());
+            }
+        });
+    }
+
+    @EventHandler
+    public void onEntityRemove(EntityRemoveFromWorldEvent event) {
+        String mobUuid = event.getEntity().getUniqueId().toString();
+
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                if (DatabaseManager.getAllMobUUIDs().contains(mobUuid)) {
+                    DatabaseManager.removeMob(mobUuid);
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Failed to remove mob from database asynchronously: " + mobUuid);
+                e.printStackTrace();
             }
         });
     }

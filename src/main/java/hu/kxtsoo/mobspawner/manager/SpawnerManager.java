@@ -135,6 +135,57 @@ public class SpawnerManager {
                 mobLocation.distance(spawnerLocation) <= radius;
     }
 
+//    private void spawnMob(Spawner spawner) {
+//        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+//            try {
+//                int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), spawner.getLocation());
+//
+//                if (totalMobs >= spawner.getTotalMaxMobs()) {
+//                    return;
+//                }
+//
+//                Bukkit.getScheduler().runTask(plugin, () -> {
+//                    try {
+//                        Mob mob = getMobFromConfig(spawner.getMobType());
+//                        if (mob == null) {
+//                            return;
+//                        }
+//
+//                        Mob.MobLevel mobLevel = mob.getRandomLevel();
+//                        if (mobLevel == null) {
+//                            return;
+//                        }
+//
+//                        LivingEntity entity = (LivingEntity) spawner.getLocation().getWorld()
+//                                .spawnEntity(spawner.getLocation(), EntityType.valueOf(spawner.getMobType().toUpperCase()));
+//
+//                        configureMobAttributes(entity, mobLevel);
+//
+//                        CompletableFuture.runAsync(() -> {
+//                            try {
+//                                DatabaseManager.saveMob(
+//                                        entity.getUniqueId().toString(),
+//                                        spawner.getName(),
+//                                        spawner.getLocation(),
+//                                        mob.getType(),
+//                                        mobLevel.getLevel()
+//                                );
+//                            } catch (SQLException e) {
+//                                plugin.getLogger().severe("Error saving mob to database: " + e.getMessage());
+//                            }
+//                        }, Bukkit.getScheduler().getMainThreadExecutor(plugin));
+//
+//                    } catch (Exception e) {
+//                        plugin.getLogger().severe("Error during mob spawning: " + e.getMessage());
+//                    }
+//                });
+//
+//            } catch (SQLException e) {
+//                plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
+//            }
+//        });
+//    }
+
     private void spawnMob(Spawner spawner) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
@@ -161,7 +212,7 @@ public class SpawnerManager {
 
                         configureMobAttributes(entity, mobLevel);
 
-                        CompletableFuture.runAsync(() -> {
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                             try {
                                 DatabaseManager.saveMob(
                                         entity.getUniqueId().toString(),
@@ -173,7 +224,7 @@ public class SpawnerManager {
                             } catch (SQLException e) {
                                 plugin.getLogger().severe("Error saving mob to database: " + e.getMessage());
                             }
-                        }, Bukkit.getScheduler().getMainThreadExecutor(plugin));
+                        });
 
                     } catch (Exception e) {
                         plugin.getLogger().severe("Error during mob spawning: " + e.getMessage());
