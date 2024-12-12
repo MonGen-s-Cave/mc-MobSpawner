@@ -23,7 +23,7 @@ public class DatabaseManager {
         String driver = configUtil.getConfig().getString("storage.driver", "h2");
         switch (driver.toLowerCase()) {
             case "sqlite":
-                database = new SQLite(plugin);
+                database = new SQLite(plugin, configUtil);
                 database.initialize();
                 break;
             case "mysql":
@@ -31,7 +31,7 @@ public class DatabaseManager {
                 database.initialize();
                 break;
             case "h2":
-                database = new H2(plugin);
+                database = new H2(plugin, configUtil);
                 database.initialize();
                 break;
             default:

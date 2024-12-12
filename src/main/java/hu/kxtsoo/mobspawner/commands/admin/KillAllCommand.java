@@ -5,6 +5,7 @@ import dev.triumphteam.cmd.core.BaseCommand;
 import dev.triumphteam.cmd.core.annotation.Command;
 import dev.triumphteam.cmd.core.annotation.SubCommand;
 import dev.triumphteam.cmd.core.annotation.Suggestion;
+import hu.kxtsoo.mobspawner.MobSpawner;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
 import hu.kxtsoo.mobspawner.util.ConfigUtil;
 import org.bukkit.Bukkit;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Command("mobspawner")
 @Permission("mobspawner.admin")
 public class KillAllCommand extends BaseCommand {
+
     private final ConfigUtil configUtil;
 
     public KillAllCommand(ConfigUtil configUtil) {
@@ -43,22 +45,39 @@ public class KillAllCommand extends BaseCommand {
     }
 
     private void killAllMobsGlobally(Player player) {
-        try {
-            List<String> mobUUIDs = DatabaseManager.getAllMobUUIDs();
+        Bukkit.getScheduler().runTaskAsynchronously(MobSpawner.getInstance(), () -> {
+            try {
+                List<String> mobUUIDs = DatabaseManager.getAllMobUUIDs();
 
-            for (String mobUUID : mobUUIDs) {
-                LivingEntity entity = (LivingEntity) Bukkit.getEntity(UUID.fromString(mobUUID));
-                if (entity != null) {
-                    entity.remove();
-                }
+                Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () -> {
+                    for (String mobUUID : mobUUIDs) {
+                        LivingEntity entity = (LivingEntity) Bukkit.getEntity(UUID.fromString(mobUUID));
+                        if (entity != null) {
+                            entity.remove();
+                        }
+                    }
+
+                    Bukkit.getScheduler().runTaskAsynchronously(MobSpawner.getInstance(), () -> {
+                        try {
+                            DatabaseManager.clearAllMobs();
+                            Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () ->
+                                    player.sendMessage(configUtil.getMessage("messages.killall-command.deleted-all-mobs"))
+                            );
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () ->
+                                    player.sendMessage(configUtil.getMessage("messages.database-error"))
+                            );
+                        }
+                    });
+                });
+            } catch (SQLException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () ->
+                        player.sendMessage(configUtil.getMessage("messages.database-error"))
+                );
             }
-
-            DatabaseManager.clearAllMobs();
-            player.sendMessage(configUtil.getMessage("messages.killall-command.deleted-all-mobs"));
-        } catch (SQLException e) {
-            e.printStackTrace();
-            player.sendMessage(configUtil.getMessage("messages.database-error"));
-        }
+        });
     }
 
     private void killMobsBySpawnerType(Player player, String spawnerType) {

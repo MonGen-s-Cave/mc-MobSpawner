@@ -1,11 +1,13 @@
 package hu.kxtsoo.mobspawner.database.impl;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import hu.kxtsoo.mobspawner.MobSpawner;
 import hu.kxtsoo.mobspawner.database.DatabaseInterface;
 import hu.kxtsoo.mobspawner.database.data.PlayerStat;
 import hu.kxtsoo.mobspawner.model.Mob;
 import hu.kxtsoo.mobspawner.model.PlayerData;
 import hu.kxtsoo.mobspawner.model.Spawner;
+import hu.kxtsoo.mobspawner.util.ConfigUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,9 +21,11 @@ public class SQLite implements DatabaseInterface {
 
     private final JavaPlugin plugin;
     private Connection connection;
+    private final ConfigUtil configUtil;
 
-    public SQLite(JavaPlugin plugin) {
+    public SQLite(JavaPlugin plugin, ConfigUtil configUtil) {
         this.plugin = plugin;
+        this.configUtil = configUtil;
     }
 
     @Override
@@ -110,7 +114,23 @@ public class SQLite implements DatabaseInterface {
                 double z = rs.getDouble("z");
 
                 Location location = new Location(Bukkit.getWorld(worldName), x, y, z);
-                spawners.add(new Spawner(spawnerName, "", 0, 0, location, "", 0, "", 0, 0));
+
+                YamlDocument spawnerConfig = configUtil.getSpawnerConfig(spawnerName);
+                if (spawnerConfig == null) {
+                    plugin.getLogger().warning("Spawner configuration not found for: " + spawnerName);
+                    continue;
+                }
+
+                String type = spawnerConfig.getString("spawner.type", "INVISIBLE");
+                int spawnRate = spawnerConfig.getInt("spawner.spawn-rate", 30);
+                int maxMobs = spawnerConfig.getInt("spawner.conditions.max-mobs", 5);
+                String mobType = spawnerConfig.getString("mob.type", "zombie");
+                int mobLevel = 1;
+                String mobCustomName = "";
+                int radius = spawnerConfig.getInt("spawner.conditions.radius", 5);
+                int totalMaxMobs = spawnerConfig.getInt("spawner.conditions.total-max-mobs", 10);
+
+                spawners.add(new Spawner(spawnerName, type, spawnRate, maxMobs, location, mobType, mobLevel, mobCustomName, radius, totalMaxMobs));
             }
         }
         return spawners;
