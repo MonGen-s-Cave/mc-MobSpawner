@@ -12,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -28,8 +27,8 @@ public class SetupModeManager {
     private final Map<Player, GameMode> savedGameModes = new HashMap<>();
     private final Map<Player, String> selectedSpawner = new HashMap<>();
     private final Set<Player> viewAllMode = new HashSet<>();
-    private final Map<Player, List<BukkitRunnable>> visibilityTasks = new HashMap<>();
-    private final Map<Location, BukkitRunnable> spawnerEffectTasks = new HashMap<>();
+    private final Map<Player, List<SchedulerManager.Task>> visibilityTasks = new HashMap<>();
+    private final Map<Location, SchedulerManager.Task> spawnerEffectTasks = new HashMap<>();
 
     public SetupModeManager(JavaPlugin plugin, ConfigUtil configUtil, SpawnerManager spawnerManager) {
         this.plugin = plugin;
@@ -189,8 +188,7 @@ public class SetupModeManager {
             String mode = config.getString("setup-mode.settings.spawner-visibility.mode", "PARTICLE").toUpperCase();
 
             if ("PARTICLE".equalsIgnoreCase(mode)) {
-                BukkitRunnable task = createSpawnerParticleTask(location, player);
-                task.runTaskTimer(plugin, 0, 10L);
+                SchedulerManager.Task task = createSpawnerParticleTask(location, player);
                 visibilityTasks.computeIfAbsent(player, k -> new ArrayList<>()).add(task);
             } else if ("MATERIAL".equalsIgnoreCase(mode)) {
                 String materialType = config.getString("setup-mode.settings.spawner-visibility.type", "STONE").toUpperCase();
@@ -263,8 +261,7 @@ public class SetupModeManager {
 
             spawnerManager.getActiveSpawners().forEach((location, spawner) -> {
                 if ("PARTICLE".equalsIgnoreCase(mode)) {
-                    BukkitRunnable task = createSpawnerParticleTask(location, player);
-                    task.runTaskTimer(plugin, 0, 10L);
+                    SchedulerManager.Task task = createSpawnerParticleTask(location, player);
                     spawnerEffectTasks.put(location, task);
                 } else if ("MATERIAL".equalsIgnoreCase(mode)) {
                     try {
@@ -281,107 +278,106 @@ public class SetupModeManager {
     private void refreshGlobalSpawnerParticles(Player player) {
         if (!visibilityTasks.containsKey(player)) return;
 
-        visibilityTasks.get(player).forEach(BukkitRunnable::cancel);
+        visibilityTasks.get(player).forEach(SchedulerManager.Task::cancel);
         visibilityTasks.remove(player);
 
         createGlobalSpawnerParticleTask(player);
     }
 
     private void createGlobalSpawnerParticleTask(Player player) {
-        BukkitRunnable task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!isInSetupMode(player) || !viewAllMode.contains(player)) {
-                    cancel();
-                    return;
-                }
-
-                String type = configUtil.getConfig().getString("setup-mode.settings.spawner-visibility.type", "FLAME").toUpperCase();
-                Particle particle;
-
-                try {
-                    particle = Particle.valueOf(type);
-                } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("Invalid particle: " + type);
-                    cancel();
-                    return;
-                }
-
-                spawnerManager.getActiveSpawners().values().forEach(spawner -> {
-                    Location location = spawner.getLocation();
-                    double x = location.getX();
-                    double y = location.getY();
-                    double z = location.getZ();
-
-                    for (double t = 0; t <= 1; t += 0.1) {
-                        player.spawnParticle(particle, x + t, y, z, 0);
-                        player.spawnParticle(particle, x, y, z + t, 0);
-                        player.spawnParticle(particle, x + t, y, z + 1, 0);
-                        player.spawnParticle(particle, x + 1, y, z + t, 0);
-                        player.spawnParticle(particle, x + t, y + 1, z, 0);
-                        player.spawnParticle(particle, x, y + 1, z + t, 0);
-                        player.spawnParticle(particle, x + t, y + 1, z + 1, 0);
-                        player.spawnParticle(particle, x + 1, y + 1, z + t, 0);
-                    }
-
-                    for (double t = 0; t <= 1; t += 0.1) {
-                        player.spawnParticle(particle, x, y + t, z, 0);
-                        player.spawnParticle(particle, x + 1, y + t, z, 0);
-                        player.spawnParticle(particle, x, y + t, z + 1, 0);
-                        player.spawnParticle(particle, x + 1, y + t, z + 1, 0);
-                    }
-                });
+        SchedulerManager.Task task = SchedulerManager.runTimer(() -> {
+            if (!isInSetupMode(player) || !viewAllMode.contains(player)) {
+                visibilityTasks.getOrDefault(player, new ArrayList<>()).forEach(SchedulerManager.Task::cancel);
+                visibilityTasks.remove(player);
+                return;
             }
-        };
 
-        task.runTaskTimer(plugin, 0, 10L);
+            String type = configUtil.getConfig().getString("setup-mode.settings.spawner-visibility.type", "FLAME").toUpperCase();
+            Particle particle;
+
+            try {
+                particle = Particle.valueOf(type);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid particle: " + type);
+                return;
+            }
+
+            spawnerManager.getActiveSpawners().values().forEach(spawner -> {
+                Location location = spawner.getLocation();
+                double x = location.getX();
+                double y = location.getY();
+                double z = location.getZ();
+
+                for (double t = 0; t <= 1; t += 0.1) {
+                    player.spawnParticle(particle, x + t, y, z, 0);
+                    player.spawnParticle(particle, x, y, z + t, 0);
+                    player.spawnParticle(particle, x + t, y, z + 1, 0);
+                    player.spawnParticle(particle, x + 1, y, z + t, 0);
+                    player.spawnParticle(particle, x + t, y + 1, z, 0);
+                    player.spawnParticle(particle, x, y + 1, z + t, 0);
+                    player.spawnParticle(particle, x + t, y + 1, z + 1, 0);
+                    player.spawnParticle(particle, x + 1, y + 1, z + t, 0);
+                }
+
+                for (double t = 0; t <= 1; t += 0.1) {
+                    player.spawnParticle(particle, x, y + t, z, 0);
+                    player.spawnParticle(particle, x + 1, y + t, z, 0);
+                    player.spawnParticle(particle, x, y + t, z + 1, 0);
+                    player.spawnParticle(particle, x + 1, y + t, z + 1, 0);
+                }
+            });
+        }, 0, 10L);
+
         visibilityTasks.computeIfAbsent(player, k -> new ArrayList<>()).add(task);
     }
 
-    private BukkitRunnable createSpawnerParticleTask(Location location, Player player) {
-        return new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!isInSetupMode(player) || !viewAllMode.contains(player)) {
-                    cancel();
-                    return;
+    private SchedulerManager.Task createSpawnerParticleTask(Location location, Player player) {
+        return SchedulerManager.runTimer(() -> {
+            if (!isInSetupMode(player) || !viewAllMode.contains(player)) {
+                SchedulerManager.Task task = spawnerEffectTasks.remove(location);
+                if (task != null) {
+                    task.cancel();
+                }
+                return;
+            }
+
+            String type = configUtil.getConfig().getString("setup-mode.settings.spawner-visibility.type", "FLAME").toUpperCase();
+            try {
+                Particle particle = Particle.valueOf(type);
+
+                double x = location.getX();
+                double y = location.getY();
+                double z = location.getZ();
+
+                for (double t = 0; t <= 1; t += 0.1) {
+                    player.spawnParticle(particle, x + t, y, z, 0);
+                    player.spawnParticle(particle, x, y, z + t, 0);
+                    player.spawnParticle(particle, x + t, y, z + 1, 0);
+                    player.spawnParticle(particle, x + 1, y, z + t, 0);
+                    player.spawnParticle(particle, x + t, y + 1, z, 0);
+                    player.spawnParticle(particle, x, y + 1, z + t, 0);
+                    player.spawnParticle(particle, x + t, y + 1, z + 1, 0);
+                    player.spawnParticle(particle, x + 1, y + 1, z + t, 0);
                 }
 
-                String type = configUtil.getConfig().getString("setup-mode.settings.spawner-visibility.type", "FLAME").toUpperCase();
-                try {
-                    Particle particle = Particle.valueOf(type);
-
-                    double x = location.getX();
-                    double y = location.getY();
-                    double z = location.getZ();
-
-                    for (double t = 0; t <= 1; t += 0.1) {
-                        player.spawnParticle(particle, x + t, y, z, 0);
-                        player.spawnParticle(particle, x, y, z + t, 0);
-                        player.spawnParticle(particle, x + t, y, z + 1, 0);
-                        player.spawnParticle(particle, x + 1, y, z + t, 0);
-                        player.spawnParticle(particle, x + t, y + 1, z, 0);
-                        player.spawnParticle(particle, x, y + 1, z + t, 0);
-                        player.spawnParticle(particle, x + t, y + 1, z + 1, 0);
-                        player.spawnParticle(particle, x + 1, y + 1, z + t, 0);
-                    }
-
-                    for (double t = 0; t <= 1; t += 0.1) {
-                        player.spawnParticle(particle, x, y + t, z, 0);
-                        player.spawnParticle(particle, x + 1, y + t, z, 0);
-                        player.spawnParticle(particle, x, y + t, z + 1, 0);
-                        player.spawnParticle(particle, x + 1, y + t, z + 1, 0);
-                    }
-                } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("Invalid particle: " + type);
-                    cancel();
+                for (double t = 0; t <= 1; t += 0.1) {
+                    player.spawnParticle(particle, x, y + t, z, 0);
+                    player.spawnParticle(particle, x + 1, y + t, z, 0);
+                    player.spawnParticle(particle, x, y + t, z + 1, 0);
+                    player.spawnParticle(particle, x + 1, y + t, z + 1, 0);
+                }
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid particle: " + type);
+                SchedulerManager.Task task = spawnerEffectTasks.remove(location);
+                if (task != null) {
+                    task.cancel();
                 }
             }
-        };
+        }, 0, 10L);
     }
 
     private void removeSpawnerParticles(Location location) {
-        BukkitRunnable task = spawnerEffectTasks.remove(location);
+        SchedulerManager.Task task = spawnerEffectTasks.remove(location);
         if (task != null) {
             task.cancel();
         }

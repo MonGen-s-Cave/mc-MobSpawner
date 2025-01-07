@@ -1,13 +1,12 @@
 package hu.kxtsoo.mobspawner.listener;
 
-import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import hu.kxtsoo.mobspawner.MobSpawner;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
+import hu.kxtsoo.mobspawner.manager.SchedulerManager;
 import hu.kxtsoo.mobspawner.model.Mob;
 import hu.kxtsoo.mobspawner.model.PlayerData;
 import hu.kxtsoo.mobspawner.util.ChatUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -16,7 +15,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.sql.SQLException;
 import java.util.Objects;
@@ -33,7 +31,7 @@ public class MobHealthListener implements Listener {
     public void onEntityDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof LivingEntity entity)) return;
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        SchedulerManager.runAsync(() -> {
             try {
                 Mob.MobLevel mobLevel = DatabaseManager.getMobLevelByUUID(entity.getUniqueId().toString());
                 if (mobLevel == null) return;
@@ -52,7 +50,7 @@ public class MobHealthListener implements Listener {
                     }
                 }
 
-                Bukkit.getScheduler().runTask(plugin, () -> updateDisplayName(entity, mobLevel));
+                SchedulerManager.run(() -> updateDisplayName(entity, mobLevel));
             } catch (SQLException e) {
                 plugin.getLogger().severe("[mc-MobSpawner] Failed to fetch mob level for UUID: " + entity.getUniqueId());
             }
@@ -63,12 +61,12 @@ public class MobHealthListener implements Listener {
     public void onEntityHeal(EntityRegainHealthEvent event) {
         if (!(event.getEntity() instanceof LivingEntity entity)) return;
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        SchedulerManager.runAsync(() -> {
             try {
                 Mob.MobLevel mobLevel = DatabaseManager.getMobLevelByUUID(entity.getUniqueId().toString());
                 if (mobLevel == null) return;
 
-                Bukkit.getScheduler().runTask(plugin, () -> updateDisplayName(entity, mobLevel));
+                SchedulerManager.run(() -> updateDisplayName(entity, mobLevel));
             } catch (SQLException e) {
                 plugin.getLogger().severe("[mc-MobSpawner] Failed to fetch mob level for UUID: " + entity.getUniqueId());
             }

@@ -106,24 +106,4 @@ public class PlaceholderAPIHandler extends PlaceholderExpansion {
 
         return configUtil.getHooks().getString("hooks.settings.PlaceholderAPI.empty-placeholder", "---");
     }
-
-//    private @NotNull String getTopPlayerStat(String sortBy, int rank, boolean isName) {
-//        try {
-//            List<PlayerStat> topPlayers = DatabaseManager.getTopPlayerStat(sortBy, rank);
-//
-//            if (rank > 0 && rank <= topPlayers.size()) {
-//                PlayerStat playerStat = topPlayers.get(rank - 1);
-//                if (isName) {
-//                    String playerName = Bukkit.getOfflinePlayer(UUID.fromString(playerStat.getUuid())).getName();
-//                    return playerName != null && !playerName.isEmpty() ? playerName : "---";
-//                } else {
-//                    return String.valueOf((int) Math.round(playerStat.getValue()));
-//                }
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return configUtil.getHooks().getString("hooks.settings.PlaceholderAPI.empty-placeholder", "---");
-//    }
 }

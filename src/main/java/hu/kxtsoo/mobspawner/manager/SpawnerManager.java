@@ -7,7 +7,6 @@ import hu.kxtsoo.mobspawner.model.Mob.MobLevel;
 import hu.kxtsoo.mobspawner.model.Spawner;
 import hu.kxtsoo.mobspawner.util.ChatUtil;
 import hu.kxtsoo.mobspawner.util.ConfigUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
@@ -16,11 +15,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public class SpawnerManager {
     private final JavaPlugin plugin;
@@ -29,7 +26,7 @@ public class SpawnerManager {
 
     private final List<Spawner> spawners = new ArrayList<>();
     private final Map<Location, Spawner> activeSpawners = new HashMap<>();
-    private final Map<Location, BukkitRunnable> spawnerTasks = new HashMap<>();
+    private final Map<Location, SchedulerManager.Task> spawnerTasks = new HashMap<>();
 
     public SpawnerManager(JavaPlugin plugin, ConfigUtil configUtil, MobManager mobManager) {
         this.plugin = plugin;
@@ -60,51 +57,44 @@ public class SpawnerManager {
     }
 
     public void startSpawnerTask(Spawner spawner) {
-        BukkitRunnable task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                Location location = spawner.getLocation();
-                if (location.getWorld() == null) {
-                    cancel();
-                    return;
-                }
-
-                YamlDocument spawnerConfig = configUtil.getSpawnerConfig(spawner.getName());
-                if (spawnerConfig == null) {
-                    plugin.getLogger().warning("No configuration found for spawner: " + spawner.getName());
-                    return;
-                }
-
-                boolean chunkRequiredLoaded = spawnerConfig.getBoolean("spawner.conditions.require-chunk-loaded", true);
-                boolean playerCheckEnabled = spawnerConfig.getBoolean("spawner.conditions.player-radius-check.enabled", false);
-                int playerRadius = spawnerConfig.getInt("spawner.conditions.player-radius-check.radius", 5);
-
-                if (chunkRequiredLoaded &&
-                        (location.getWorld() == null ||
-                                Bukkit.getWorld(location.getWorld().getName()) == null ||
-                                !location.isChunkLoaded())) {
-                    return;
-                }
-
-                if ((playerCheckEnabled && !isPlayerNearby(location, playerRadius)) ||
-                        getNearbyMobsCount(location, spawner.getRadius(), spawner.getMobType()) >= spawner.getMaxMobs()) {
-                    return;
-                }
-
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    try {
-                        int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), location);
-                        if (totalMobs < spawner.getTotalMaxMobs()) {
-                            Bukkit.getScheduler().runTask(plugin, () -> spawnMob(spawner));
-                        }
-                    } catch (SQLException e) {
-                        plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
-                    }
-                });
+        SchedulerManager.Task task = SchedulerManager.runTimer(() -> {
+            Location location = spawner.getLocation();
+            if (location.getWorld() == null) {
+                stopSpawnerTask(location);
+                return;
             }
-        };
 
-        task.runTaskTimer(plugin, 0, spawner.getSpawnRate() * 20L);
+            YamlDocument spawnerConfig = configUtil.getSpawnerConfig(spawner.getName());
+            if (spawnerConfig == null) {
+                plugin.getLogger().warning("No configuration found for spawner: " + spawner.getName());
+                return;
+            }
+
+            boolean chunkRequiredLoaded = spawnerConfig.getBoolean("spawner.conditions.require-chunk-loaded", true);
+            boolean playerCheckEnabled = spawnerConfig.getBoolean("spawner.conditions.player-radius-check.enabled", false);
+            int playerRadius = spawnerConfig.getInt("spawner.conditions.player-radius-check.radius", 5);
+
+            if (chunkRequiredLoaded && !location.isChunkLoaded()) {
+                return;
+            }
+
+            if ((playerCheckEnabled && !isPlayerNearby(location, playerRadius)) ||
+                    getNearbyMobsCount(location, spawner.getRadius(), spawner.getMobType()) >= spawner.getMaxMobs()) {
+                return;
+            }
+
+            SchedulerManager.runAsync(() -> {
+                try {
+                    int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), location);
+                    if (totalMobs < spawner.getTotalMaxMobs()) {
+                        SchedulerManager.run(() -> spawnMob(spawner));
+                    }
+                } catch (SQLException e) {
+                    plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
+                }
+            });
+        }, 0, spawner.getSpawnRate() * 20L);
+
         spawnerTasks.put(spawner.getLocation(), task);
     }
 
@@ -135,74 +125,22 @@ public class SpawnerManager {
                 mobLocation.distance(spawnerLocation) <= radius;
     }
 
-//    private void spawnMob(Spawner spawner) {
-//        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-//            try {
-//                int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), spawner.getLocation());
-//
-//                if (totalMobs >= spawner.getTotalMaxMobs()) {
-//                    return;
-//                }
-//
-//                Bukkit.getScheduler().runTask(plugin, () -> {
-//                    try {
-//                        Mob mob = getMobFromConfig(spawner.getMobType());
-//                        if (mob == null) {
-//                            return;
-//                        }
-//
-//                        Mob.MobLevel mobLevel = mob.getRandomLevel();
-//                        if (mobLevel == null) {
-//                            return;
-//                        }
-//
-//                        LivingEntity entity = (LivingEntity) spawner.getLocation().getWorld()
-//                                .spawnEntity(spawner.getLocation(), EntityType.valueOf(spawner.getMobType().toUpperCase()));
-//
-//                        configureMobAttributes(entity, mobLevel);
-//
-//                        CompletableFuture.runAsync(() -> {
-//                            try {
-//                                DatabaseManager.saveMob(
-//                                        entity.getUniqueId().toString(),
-//                                        spawner.getName(),
-//                                        spawner.getLocation(),
-//                                        mob.getType(),
-//                                        mobLevel.getLevel()
-//                                );
-//                            } catch (SQLException e) {
-//                                plugin.getLogger().severe("Error saving mob to database: " + e.getMessage());
-//                            }
-//                        }, Bukkit.getScheduler().getMainThreadExecutor(plugin));
-//
-//                    } catch (Exception e) {
-//                        plugin.getLogger().severe("Error during mob spawning: " + e.getMessage());
-//                    }
-//                });
-//
-//            } catch (SQLException e) {
-//                plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
-//            }
-//        });
-//    }
-
     private void spawnMob(Spawner spawner) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        SchedulerManager.runAsync(() -> {
             try {
                 int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), spawner.getLocation());
-
                 if (totalMobs >= spawner.getTotalMaxMobs()) {
                     return;
                 }
 
-                Bukkit.getScheduler().runTask(plugin, () -> {
+                SchedulerManager.run(() -> {
                     try {
                         Mob mob = getMobFromConfig(spawner.getMobType());
                         if (mob == null) {
                             return;
                         }
 
-                        Mob.MobLevel mobLevel = mob.getRandomLevel();
+                        MobLevel mobLevel = mob.getRandomLevel();
                         if (mobLevel == null) {
                             return;
                         }
@@ -212,7 +150,7 @@ public class SpawnerManager {
 
                         configureMobAttributes(entity, mobLevel);
 
-                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                        SchedulerManager.runAsync(() -> {
                             try {
                                 DatabaseManager.saveMob(
                                         entity.getUniqueId().toString(),
@@ -230,7 +168,6 @@ public class SpawnerManager {
                         plugin.getLogger().severe("Error during mob spawning: " + e.getMessage());
                     }
                 });
-
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
             }
@@ -350,7 +287,7 @@ public class SpawnerManager {
     }
 
     public void stopSpawnerTask(Location location) {
-        BukkitRunnable task = spawnerTasks.remove(location);
+        SchedulerManager.Task task = spawnerTasks.remove(location);
         if (task != null) {
             task.cancel();
         }

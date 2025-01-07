@@ -7,6 +7,7 @@ import dev.triumphteam.cmd.core.annotation.SubCommand;
 import dev.triumphteam.cmd.core.annotation.Suggestion;
 import hu.kxtsoo.mobspawner.MobSpawner;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
+import hu.kxtsoo.mobspawner.manager.SchedulerManager;
 import hu.kxtsoo.mobspawner.util.ConfigUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -45,11 +46,11 @@ public class KillAllCommand extends BaseCommand {
     }
 
     private void killAllMobsGlobally(Player player) {
-        Bukkit.getScheduler().runTaskAsynchronously(MobSpawner.getInstance(), () -> {
+        SchedulerManager.runAsync(() -> {
             try {
                 List<String> mobUUIDs = DatabaseManager.getAllMobUUIDs();
 
-                Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () -> {
+                SchedulerManager.run(() -> {
                     for (String mobUUID : mobUUIDs) {
                         LivingEntity entity = (LivingEntity) Bukkit.getEntity(UUID.fromString(mobUUID));
                         if (entity != null) {
@@ -57,15 +58,15 @@ public class KillAllCommand extends BaseCommand {
                         }
                     }
 
-                    Bukkit.getScheduler().runTaskAsynchronously(MobSpawner.getInstance(), () -> {
+                    SchedulerManager.runAsync(() -> {
                         try {
                             DatabaseManager.clearAllMobs();
-                            Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () ->
+                            SchedulerManager.run(() ->
                                     player.sendMessage(configUtil.getMessage("messages.killall-command.deleted-all-mobs"))
                             );
                         } catch (SQLException e) {
                             e.printStackTrace();
-                            Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () ->
+                            SchedulerManager.run(() ->
                                     player.sendMessage(configUtil.getMessage("messages.database-error"))
                             );
                         }
@@ -73,7 +74,7 @@ public class KillAllCommand extends BaseCommand {
                 });
             } catch (SQLException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(MobSpawner.getInstance(), () ->
+                SchedulerManager.run(() ->
                         player.sendMessage(configUtil.getMessage("messages.database-error"))
                 );
             }
@@ -81,21 +82,32 @@ public class KillAllCommand extends BaseCommand {
     }
 
     private void killMobsBySpawnerType(Player player, String spawnerType) {
-        try {
-            List<String> mobUUIDs = DatabaseManager.getMobUUIDsBySpawnerType(spawnerType);
+        SchedulerManager.runAsync(() -> {
+            try {
+                List<String> mobUUIDs = DatabaseManager.getMobUUIDsBySpawnerType(spawnerType);
 
-            for (String mobUUID : mobUUIDs) {
-                LivingEntity entity = (LivingEntity) Bukkit.getEntity(UUID.fromString(mobUUID));
-                if (entity != null) {
-                    entity.remove();
-                }
+                SchedulerManager.run(() -> {
+                    for (String mobUUID : mobUUIDs) {
+                        LivingEntity entity = (LivingEntity) Bukkit.getEntity(UUID.fromString(mobUUID));
+                        if (entity != null) {
+                            entity.remove();
+                        }
+                    }
+
+                    try {
+                        DatabaseManager.clearMobsBySpawnerType(spawnerType);
+                        player.sendMessage(configUtil.getMessage("messages.killall-command.deleted-mobs").replace("%spawner_type%", spawnerType));
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        player.sendMessage(configUtil.getMessage("messages.database-error"));
+                    }
+                });
+            } catch (SQLException e) {
+                e.printStackTrace();
+                SchedulerManager.run(() ->
+                        player.sendMessage(configUtil.getMessage("messages.database-error"))
+                );
             }
-
-            DatabaseManager.clearMobsBySpawnerType(spawnerType);
-            player.sendMessage(configUtil.getMessage("messages.killall-command.deleted-mobs").replace("%spawner_type%", spawnerType));
-        } catch (SQLException e) {
-            e.printStackTrace();
-            player.sendMessage(configUtil.getMessage("messages.database-error"));
-        }
+        });
     }
 }

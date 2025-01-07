@@ -3,12 +3,12 @@ package hu.kxtsoo.mobspawner.listener;
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import hu.kxtsoo.mobspawner.database.DatabaseManager;
 import hu.kxtsoo.mobspawner.manager.MobManager;
+import hu.kxtsoo.mobspawner.manager.SchedulerManager;
 import hu.kxtsoo.mobspawner.model.Mob;
 import hu.kxtsoo.mobspawner.model.PlayerData;
 import hu.kxtsoo.mobspawner.util.ChatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,7 +36,7 @@ public class MobDeathListener implements Listener {
     public void onMobDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        SchedulerManager.runAsync(() -> {
             try {
                 Mob.MobLevel mobLevel = DatabaseManager.getMobLevelByUUID(entity.getUniqueId().toString());
                 if (mobLevel == null) return;
@@ -44,7 +44,7 @@ public class MobDeathListener implements Listener {
                 Player killer = entity.getKiller();
                 if (killer == null) return;
 
-                Bukkit.getScheduler().runTask(plugin, () -> executeRewardCommands(mobLevel.getRewards(), killer, mobLevel.getName()));
+                SchedulerManager.run(() -> executeRewardCommands(mobLevel.getRewards(), killer, mobLevel.getName()));
 
                 try {
                     DatabaseManager.removeMob(entity.getUniqueId().toString());
@@ -85,7 +85,8 @@ public class MobDeathListener implements Listener {
             if (random.nextDouble() * 100 <= chance) {
                 switch (actionType) {
                     case "[command]":
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                        String finalCommand = command;
+                        SchedulerManager.run(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand));
                         break;
                     case "[message]":
                         player.sendMessage(ChatUtil.colorizeHex(command));
@@ -104,7 +105,7 @@ public class MobDeathListener implements Listener {
     public void onEntityRemove(EntityRemoveFromWorldEvent event) {
         String mobUuid = event.getEntity().getUniqueId().toString();
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        SchedulerManager.runAsync(() -> {
             try {
                 if (DatabaseManager.getAllMobUUIDs().contains(mobUuid)) {
                     DatabaseManager.removeMob(mobUuid);
@@ -124,7 +125,7 @@ public class MobDeathListener implements Listener {
             if (entity instanceof LivingEntity) {
                 String mobUuid = entity.getUniqueId().toString();
 
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                SchedulerManager.runAsync(() -> {
                     try {
                         if (DatabaseManager.getAllMobUUIDs().contains(mobUuid)) {
                             DatabaseManager.removeMob(mobUuid);

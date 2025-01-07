@@ -1,5 +1,6 @@
 package hu.kxtsoo.mobspawner.util;
 
+import hu.kxtsoo.mobspawner.manager.SchedulerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,13 +31,13 @@ public class UpdateChecker implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
         long interval = 30L * 60L * 20L;
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        SchedulerManager.runAsyncTimer(() -> {
             this.latestVersion = fetchLatestVersion();
             this.isUpToDate = checkIfLatestVersion(currentVersion);
 
             if (latestVersion == null || isUpToDate) return;
 
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            SchedulerManager.run(() -> {
                 Bukkit.getConsoleSender().sendMessage(createUpdateMessage());
             });
         }, 0L, interval);
@@ -47,7 +48,7 @@ public class UpdateChecker implements Listener {
         if (latestVersion == null || isUpToDate) return;
         if (!event.getPlayer().hasPermission("mobspawner.update-notify")) return;
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        SchedulerManager.runLater(() -> {
             event.getPlayer().sendMessage(createUpdateMessage());
         }, 50L);
     }
