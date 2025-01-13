@@ -64,34 +64,36 @@ public class SpawnerManager {
                 return;
             }
 
-            YamlDocument spawnerConfig = configUtil.getSpawnerConfig(spawner.getName());
-            if (spawnerConfig == null) {
-                plugin.getLogger().warning("No configuration found for spawner: " + spawner.getName());
-                return;
-            }
-
-            boolean chunkRequiredLoaded = spawnerConfig.getBoolean("spawner.conditions.require-chunk-loaded", true);
-            boolean playerCheckEnabled = spawnerConfig.getBoolean("spawner.conditions.player-radius-check.enabled", false);
-            int playerRadius = spawnerConfig.getInt("spawner.conditions.player-radius-check.radius", 5);
-
-            if (chunkRequiredLoaded && !location.isChunkLoaded()) {
-                return;
-            }
-
-            if ((playerCheckEnabled && !isPlayerNearby(location, playerRadius)) ||
-                    getNearbyMobsCount(location, spawner.getRadius(), spawner.getMobType()) >= spawner.getMaxMobs()) {
-                return;
-            }
-
-            SchedulerManager.runAsync(() -> {
-                try {
-                    int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), location);
-                    if (totalMobs < spawner.getTotalMaxMobs()) {
-                        SchedulerManager.run(() -> spawnMob(spawner));
-                    }
-                } catch (SQLException e) {
-                    plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
+            SchedulerManager.run(() -> {
+                YamlDocument spawnerConfig = configUtil.getSpawnerConfig(spawner.getName());
+                if (spawnerConfig == null) {
+                    plugin.getLogger().warning("No configuration found for spawner: " + spawner.getName());
+                    return;
                 }
+
+                boolean chunkRequiredLoaded = spawnerConfig.getBoolean("spawner.conditions.require-chunk-loaded", true);
+                boolean playerCheckEnabled = spawnerConfig.getBoolean("spawner.conditions.player-radius-check.enabled", false);
+                int playerRadius = spawnerConfig.getInt("spawner.conditions.player-radius-check.radius", 5);
+
+                if (chunkRequiredLoaded && !location.isChunkLoaded()) {
+                    return;
+                }
+
+                if ((playerCheckEnabled && !isPlayerNearby(location, playerRadius)) ||
+                        getNearbyMobsCount(location, spawner.getRadius(), spawner.getMobType()) >= spawner.getMaxMobs()) {
+                    return;
+                }
+
+                SchedulerManager.runAsync(() -> {
+                    try {
+                        int totalMobs = DatabaseManager.getMobCountForSpawner(spawner.getName(), location);
+                        if (totalMobs < spawner.getTotalMaxMobs()) {
+                            SchedulerManager.run(() -> spawnMob(spawner));
+                        }
+                    } catch (SQLException e) {
+                        plugin.getLogger().severe("Error checking global mob limit: " + e.getMessage());
+                    }
+                });
             });
         }, 0, spawner.getSpawnRate() * 20L);
 
@@ -104,20 +106,39 @@ public class SpawnerManager {
             return false;
         }
 
-        return location.getWorld().getPlayers().stream()
-                .anyMatch(player -> {
-                    double distanceSquared = player.getLocation().distanceSquared(location);
-                    return distanceSquared <= radius * radius;
-                });
+        final boolean[] isNearby = {false};
+        SchedulerManager.run(() -> {
+            isNearby[0] = location.getWorld().getPlayers().stream()
+                    .anyMatch(player -> {
+                        double distanceSquared = player.getLocation().distanceSquared(location);
+                        return distanceSquared <= radius * radius;
+                    });
+        });
+        return isNearby[0];
     }
 
-
     private int getNearbyMobsCount(Location location, int radius, String spawnerName) {
-        return (int) location.getWorld().getNearbyEntities(location, radius, radius, radius).stream()
-                .filter(entity -> entity instanceof LivingEntity)
-                .filter(entity -> entity.getType() == EntityType.valueOf(spawnerName.toUpperCase()))
-                .filter(entity -> isWithinRadius(entity.getLocation(), location, radius))
-                .count();
+
+        if (location.getWorld() == null) {
+            plugin.getLogger().warning("[MobSpawner] World is null for location: " + location);
+            return 0;
+        }
+
+        int[] mobCount = {0};
+        SchedulerManager.run(() -> {
+            mobCount[0] = (int) location.getWorld().getNearbyEntities(location, radius, radius, radius).stream()
+                    .filter(entity -> entity instanceof LivingEntity)
+                    .filter(entity -> entity.getType() == EntityType.valueOf(spawnerName.toUpperCase()))
+                    .filter(entity -> isWithinRadius(entity.getLocation(), location, radius))
+                    .count();
+        });
+        return mobCount[0];
+
+//        return (int) location.getWorld().getNearbyEntities(location, radius, radius, radius).stream()
+//                .filter(entity -> entity instanceof LivingEntity)
+//                .filter(entity -> entity.getType() == EntityType.valueOf(spawnerName.toUpperCase()))
+//                .filter(entity -> isWithinRadius(entity.getLocation(), location, radius))
+//                .count();
     }
 
     private boolean isWithinRadius(Location mobLocation, Location spawnerLocation, int radius) {
