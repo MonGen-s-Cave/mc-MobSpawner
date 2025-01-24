@@ -1,10 +1,8 @@
 setup-menu:
   title: "&8         ꜱᴇʟᴇᴄᴛ ᴀ ꜱᴘᴀᴡɴᴇʀ"
-  size: 27
+  size: 36
 
-  filler-item:
-    type: "GRAY_STAINED_GLASS_PANE"
-    name: ""
+  filler-item: []
 
   spawner-item:
     type: BEACON
@@ -20,4 +18,27 @@ setup-menu:
       - "&f"
       - "&6- ʟᴇꜰᴛ ᴄʟɪᴄᴋ ᴛᴏ ꜱᴇʟᴇᴄᴛ"
 
-version: '1'
+  next-button:
+    name: "&eNext Page"
+    material: "ARROW"
+    slot: [33]
+
+  previous-button:
+    name: "&ePrevious Page"
+    material: "ARROW"
+    slot: [29]
+
+  close-button:
+    material: "MANGROVE_DOOR"
+    name: "&cClose the Menu"
+    lore: []
+    slot: [31]
+
+  decorative-items:
+    item1:
+      material: "BLACK_STAINED_GLASS_PANE"
+      name: "&f"
+      lore: []
+      slot: [27,28,30,32,34,35]
+
+version: 2

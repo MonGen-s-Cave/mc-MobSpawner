@@ -80,7 +80,7 @@ public final class MobSpawner extends JavaPlugin {
         String version = getServer().getVersion();
 
         System.out.println(" ");
-        System.out.println(orange + "   __  __   ___   ____  ____   ____    _ __        __ _   _  _____  ____" + reset);
+        System.out.println(orange + "    __  __   ___   ____  ____   ____    _ __        __ _   _  _____  ____" + reset);
         System.out.println(orange + "   |  \\/  | / _ \\ | __ )/ ___| |  _ \\  / \\\\ \\      / /| \\ | || ____||  _ \\" + reset);
         System.out.println(orange + "   | |\\/| || | | ||  _ \\\\___ \\ | |_) |/ _ \\\\ \\ /\\ / / |  \\| ||  _|  | |_) |" + reset);
         System.out.println(orange + "   | |  | || |_| || |_) |___) ||  __// ___ \\\\ V  V /  | |\\  || |___ |  _ < " + reset);
