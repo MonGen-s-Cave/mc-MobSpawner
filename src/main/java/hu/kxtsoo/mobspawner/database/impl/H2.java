@@ -375,6 +375,58 @@ public class H2 implements DatabaseInterface {
     }
 
     @Override
+    public void resetPlayerDamage(String playerUuid) throws SQLException {
+        String query = "UPDATE mobspawner_players SET damage_dealt = 0 WHERE uuid = ?";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, playerUuid);
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void resetPlayerKills(String playerUuid) throws SQLException {
+        String query = "UPDATE mobspawner_players SET mobs_killed = 0 WHERE uuid = ?";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, playerUuid);
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void resetPlayerStats(String playerUuid) throws SQLException {
+        String query = "UPDATE mobspawner_players SET mobs_killed = 0, damage_dealt = 0 WHERE uuid = ?";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setString(1, playerUuid);
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void resetAllPlayersDamage() throws SQLException {
+        String query = "UPDATE mobspawner_players SET damage_dealt = 0";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void resetAllPlayersKills() throws SQLException {
+        String query = "UPDATE mobspawner_players SET mobs_killed = 0";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
+    public void resetAllPlayersStats() throws SQLException {
+        String query = "UPDATE mobspawner_players SET mobs_killed = 0, damage_dealt = 0";
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.executeUpdate();
+        }
+    }
+
+
+    @Override
     public void close() throws SQLException {
         if (connection != null && !connection.isClosed()) {
             connection.close();

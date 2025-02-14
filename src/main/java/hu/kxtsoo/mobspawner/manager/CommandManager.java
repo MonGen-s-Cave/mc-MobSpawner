@@ -4,6 +4,7 @@ import dev.triumphteam.cmd.bukkit.BukkitCommandManager;
 import dev.triumphteam.cmd.core.suggestion.SuggestionKey;
 import hu.kxtsoo.mobspawner.commands.admin.KillAllCommand;
 import hu.kxtsoo.mobspawner.commands.admin.ReloadCommand;
+import hu.kxtsoo.mobspawner.commands.admin.ResetCommand;
 import hu.kxtsoo.mobspawner.commands.admin.SetupCommand;
 import hu.kxtsoo.mobspawner.guis.SetupGUI;
 import hu.kxtsoo.mobspawner.model.Spawner;
@@ -51,11 +52,23 @@ public class CommandManager {
 
             return suggestions;
         });
+
+        commandManager.registerSuggestion(SuggestionKey.of("reset_types"), (sender, context) -> List.of("damage", "kills", "*"));
+
+        commandManager.registerSuggestion(SuggestionKey.of("online_players_with_*"), (sender, context) -> {
+            List<String> players = new ArrayList<>();
+            players.add("*");
+            players.addAll(Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .toList());
+            return players;
+        });
     }
 
     public void registerCommands() {
         commandManager.registerCommand(new SetupCommand(setupGUI, setupModeManager));
         commandManager.registerCommand(new KillAllCommand(configUtil));
         commandManager.registerCommand(new ReloadCommand(configUtil));
+        commandManager.registerCommand(new ResetCommand(configUtil));
     }
 }

@@ -39,6 +39,13 @@ public interface DatabaseInterface {
     void savePlayerData(PlayerData playerData) throws SQLException;
     List<PlayerStat> getTopPlayerStat(String statType, int limit) throws SQLException;
 
+    void resetPlayerDamage(String playerUuid) throws SQLException;
+    void resetPlayerKills(String playerUuid) throws SQLException;
+    void resetPlayerStats(String playerUuid) throws SQLException;
+    void resetAllPlayersDamage() throws SQLException;
+    void resetAllPlayersKills() throws SQLException;
+    void resetAllPlayersStats() throws SQLException;
+
     Connection getConnection() throws SQLException;
 
     void close() throws SQLException;

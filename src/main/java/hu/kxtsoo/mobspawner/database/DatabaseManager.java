@@ -113,6 +113,30 @@ public class DatabaseManager {
         database.clearMobsBySpawnerLocation(location);
     }
 
+    public static void resetPlayerDamage(String playerUuid) throws SQLException {
+        database.resetPlayerDamage(playerUuid);
+    }
+
+    public static void resetPlayerKills(String playerUuid) throws SQLException {
+        database.resetPlayerKills(playerUuid);
+    }
+
+    public static void resetPlayerStats(String playerUuid) throws SQLException {
+        database.resetPlayerStats(playerUuid);
+    }
+
+    public static void resetAllPlayersDamage() throws SQLException {
+        database.resetAllPlayersDamage();
+    }
+
+    public static void resetAllPlayersKills() throws SQLException {
+        database.resetAllPlayersKills();
+    }
+
+    public static void resetAllPlayersStats() throws SQLException {
+        database.resetAllPlayersStats();
+    }
+
     public static Connection getConnection() throws SQLException {
         if (database != null) {
             return database.getConnection();
